@@ -1,0 +1,18 @@
+[app]
+name = "Spotify Tracker V2"
+version = "2.0.0"
+user_timezone = "America/Toronto"
+database_path = "data/tracker.db"
+backup_directory = "backups"
+imports_directory = "imports"
+
+[spotify]
+client_id = ""
+redirect_uri = "http://127.0.0.1:8765/api/auth/callback"
+active_poll_interval_seconds = 5
+paused_poll_interval_seconds = 15
+inactive_poll_interval_seconds = 60
+recent_sync_interval_seconds = 60
+
+[features]
+enable_derived_listening_metrics = false
