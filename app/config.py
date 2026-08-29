@@ -3,9 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import os, tomllib
+from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / "config" / "settings.toml"
+load_dotenv(ROOT / ".env", override=False)
 
 @dataclass(slots=True)
 class Settings:
