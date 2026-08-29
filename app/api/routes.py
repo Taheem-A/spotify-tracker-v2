@@ -11,7 +11,6 @@ from app.spotify.client import current_playback
 from app.services.maintenance import backup, diagnostics, export_data
 
 router=APIRouter(prefix="/api")
-_pending_state=None
 class FlagBody(BaseModel): enabled: bool
 
 @router.get("/health")
@@ -68,12 +67,19 @@ def raw(limit:int=100,offset:int=0):
 async def spotify_status(): return {"connected":bool(await access_token()),"client_configured":bool(settings.spotify_client_id)}
 @router.get("/spotify/connect")
 def connect_spotify():
-    global _pending_state
     if not settings.spotify_client_id: raise HTTPException(400,"Set SPOTIFY_CLIENT_ID first")
-    url,_pending_state=create_authorization_url(); return {"url":url}
+    url,_=create_authorization_url(); return {"url":url}
 @router.get("/auth/callback")
-async def callback(code:str,state:str|None=None):
-    await exchange_code(code); return RedirectResponse("http://127.0.0.1:5173/settings?spotify=connected")
+async def callback(code:str,state:str|None=None,error:str|None=None):
+    if error:
+        raise HTTPException(400,f"Spotify authorization failed: {error}")
+    try:
+        await exchange_code(code,state)
+    except ValueError as exc:
+        raise HTTPException(400,str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(400,str(exc)) from exc
+    return RedirectResponse("http://127.0.0.1:5173/settings?spotify=connected")
 @router.get("/spotify/now-playing")
 async def now_playing(): return await current_playback()
 @router.post("/settings/derived-metrics")
